@@ -1,3 +1,6 @@
+using EjercicioModulo3Clase2.Repository;
+using Microsoft.EntityFrameworkCore;
+
 namespace EjercicioModulo3Clase2
 {
     public class Program
@@ -12,7 +15,10 @@ namespace EjercicioModulo3Clase2
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-
+            builder.Services.AddDbContext<ToDoListDBContext>(opt =>
+            {
+                opt.UseSqlServer("Data Source=localhost;Initial Catalog=ToDoListDB;Persist Security Info=True;User ID=sa;Password=Password01;Trust Server Certificate=True");
+            });
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
