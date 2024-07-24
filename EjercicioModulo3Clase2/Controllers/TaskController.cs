@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.VisualBasic;
+using EjercicioModulo3Clase2.Services;
+using Microsoft.EntityFrameworkCore;
+using EjercicioModulo3Clase2.Services.Interfaces;
 
 namespace EjercicioModulo3Clase2.Controllers
 {
@@ -21,19 +24,18 @@ namespace EjercicioModulo3Clase2.Controllers
          * 5 - En este controlador, realizar los siguientes ejercicios:
          */
         #endregion
-        private readonly ToDoListDBContext _Context;
-
-        public TaskController(ToDoListDBContext context)
+       private readonly ITaskService _taskService;
+        public TaskController(ITaskService taskService)
         {
-            _Context = context;
+            _taskService = taskService;
         }
-
         #region Ejercicio 1
         // Crear un endpoint para obtener un listado de todas las tareas usando HTTP GET
         [HttpGet]
         public IActionResult TaskList() 
         {
-            return Ok(_Context.Tasks.ToList());
+            var result = _taskService.GetAllTasks(); 
+            return Ok(result);
         }
         #endregion
 
@@ -43,7 +45,8 @@ namespace EjercicioModulo3Clase2.Controllers
         [HttpGet("{id}", Name = "GetTaskById")]
         public IActionResult TaskDetail([FromRoute] int id) 
         {
-            return Ok(_Context.Tasks.FirstOrDefault(t => t.Id == id));
+            var result = _taskService.GetTaskById(id);
+            return Ok(result);
         }
         #region Ejercicio 3
         // Crear un endpoint para crear una nueva tarea usando HTTP POST
@@ -51,17 +54,8 @@ namespace EjercicioModulo3Clase2.Controllers
         [Route("AddTask")]
         public IActionResult newTasks([FromBody] TasksDTO tarea)
         {
-            Tasks t = new Tasks()
-            {
-                Title = tarea.Title,
-                Description = tarea.Description,
-                DueDate = tarea.DueDate,
-                IsCompleted = tarea.IsCompleted,
-                IsActive = tarea.IsActive,
-            };
-            _Context.Add(t);
-            _Context.SaveChanges();
-            return CreatedAtRoute("GetTaskById", new { id = t.Id }, t);
+            var result = _taskService.AddTask(tarea);
+            return CreatedAtRoute("GetTaskById", new { id = result.Id }, result);
            
         }
         #endregion
@@ -69,16 +63,11 @@ namespace EjercicioModulo3Clase2.Controllers
         #region Ejercicio 4
         // Crear un endpoint para marcar una tarea como completada usando HTTP PUT
         [HttpPut("{id}")]
-        public IActionResult UpDate([FromRoute] int id,[FromBody] TasksDTO tarea)
+        public IActionResult UpDate([FromRoute] int id, [FromBody] TasksDTO tarea)
         {
-          var t = _Context.Tasks.FirstOrDefault(t => t.Id == id);
-            t.Title = tarea.Title;
-            t.Description = tarea.Description;
-            t.DueDate = tarea.DueDate;
-            t.IsCompleted = tarea.IsCompleted;
-            t.IsActive = tarea.IsActive;
-            _Context.SaveChanges();
-            return Ok(t);
+            var result = _taskService.GetTaskById(id);
+
+            return Ok(result);
         }
         #endregion
 
@@ -88,10 +77,9 @@ namespace EjercicioModulo3Clase2.Controllers
         [HttpPut("Low/{id}")]
         public IActionResult lowTask([FromRoute] int id, [FromBody] LowTaskDTO tarea)
         {
-            var t = _Context.Tasks.FirstOrDefault(t => t.Id == id);
-            t.IsActive = tarea.IsActive;
-            _Context.SaveChanges();
-            return Ok(t);
+            var result = _taskService.MarkTaskAsInactive(id, tarea);
+           
+            return Ok(result);
         }
 
     }
